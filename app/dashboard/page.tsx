@@ -3,7 +3,15 @@
 import React from 'react';
 import { useExpenses } from '@/lib/hooks/useExpenses';
 import { SummaryCards } from '@/components/dashboard/SummaryCards';
-import { ExpenseCharts } from '@/components/dashboard/ExpenseCharts';
+import dynamic from 'next/dynamic';
+
+const ExpenseCharts = dynamic(
+  () => import('@/components/dashboard/ExpenseCharts').then((mod) => ({ default: mod.ExpenseCharts })),
+  {
+    ssr: false,
+    loading: () => <div className="h-[300px] flex items-center justify-center text-gray-500">Loading charts...</div>
+  }
+);
 import { ExpenseList } from '@/components/expenses/ExpenseList';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
