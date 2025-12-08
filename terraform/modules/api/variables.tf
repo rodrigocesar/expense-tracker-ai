@@ -52,6 +52,12 @@ variable "api_gateway_throttle_rate_limit" {
   default     = 100
 }
 
+variable "enable_waf" {
+  description = "Enable WAF for API Gateway"
+  type        = bool
+  default     = false
+}
+
 variable "waf_web_acl_id" {
   description = "WAF Web ACL ID"
   type        = string

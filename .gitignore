@@ -39,6 +39,7 @@ next-env.d.ts
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+terraform.tfvars
 
 # lambda
 lambda/dist/

@@ -2,8 +2,11 @@
 data "aws_region" "current" {}
 
 # S3 Bucket for static website hosting
+# Using account ID to ensure bucket name uniqueness (S3 bucket names are globally unique)
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "frontend" {
-  bucket = "${var.project_name}-frontend-${var.environment}"
+  bucket = "${var.project_name}-frontend-${var.environment}-${substr(data.aws_caller_identity.current.account_id, length(data.aws_caller_identity.current.account_id) - 4, 4)}"
 
   tags = {
     Name        = "${var.project_name}-frontend-${var.environment}"
@@ -180,25 +183,9 @@ resource "aws_cloudfront_response_headers_policy" "security" {
     }
   }
 
-  custom_headers_config {
-    items {
-      header   = "X-Content-Type-Options"
-      value    = "nosniff"
-      override = true
-    }
-
-    items {
-      header   = "X-Frame-Options"
-      value    = "DENY"
-      override = true
-    }
-
-    items {
-      header   = "X-XSS-Protection"
-      value    = "1; mode=block"
-      override = true
-    }
-  }
+  # Custom headers can be added here if needed
+  # Note: Security headers like X-Content-Type-Options, X-Frame-Options, and X-XSS-Protection
+  # are managed through security_headers_config above
 }
 
 # CloudFront Distribution

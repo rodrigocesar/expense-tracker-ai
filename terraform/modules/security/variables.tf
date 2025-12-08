@@ -20,9 +20,3 @@ variable "waf_rate_limit" {
   default     = 2000
 }
 
-variable "api_gateway_arn" {
-  description = "API Gateway ARN for WAF association"
-  type        = string
-  default     = ""
-}
-

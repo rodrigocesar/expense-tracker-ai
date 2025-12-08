@@ -8,14 +8,14 @@ data "aws_caller_identity" "current" {}
 resource "null_resource" "lambda_build" {
   triggers = {
     source_code = sha256(join("", [
-      for f in fileset("${path.root}/../../lambda/src", "**/*.ts") : 
-      filesha256("${path.root}/../../lambda/src/${f}")
+      for f in fileset("${path.module}/../../../lambda/src", "**/*.ts") : 
+      filesha256("${path.module}/../../../lambda/src/${f}")
     ]))
-    package_json = filesha256("${path.root}/../../lambda/package.json")
+    package_json = filesha256("${path.module}/../../../lambda/package.json")
   }
 
   provisioner "local-exec" {
-    working_dir = "${path.root}/../../lambda"
+    working_dir = "${path.module}/../../../lambda"
     command     = <<-EOT
       npm install
       npm run build || true
@@ -28,7 +28,7 @@ data "archive_file" "lambda_zip" {
   for_each = local.lambda_functions
 
   type        = "zip"
-  source_dir  = "${path.root}/../../lambda/dist/${each.key}"
+  source_dir  = "${path.module}/../../../lambda/dist/${each.key}"
   output_path = "${path.module}/.terraform/${each.key}.zip"
 
   depends_on = [null_resource.lambda_build]
@@ -78,7 +78,7 @@ resource "aws_lambda_function" "expenses_api" {
   environment {
     variables = {
       TABLE_NAME = var.dynamodb_table_name
-      AWS_REGION = data.aws_region.current.name
+      # AWS_REGION is automatically provided by Lambda runtime
     }
   }
 
@@ -232,26 +232,21 @@ resource "aws_api_gateway_stage" "api" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
   stage_name    = var.environment
 
-  # Throttling settings
-  throttle_settings {
-    burst_limit = var.api_gateway_throttle_burst_limit
-    rate_limit  = var.api_gateway_throttle_rate_limit
-  }
-
-  # Access logging
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.api_gateway.arn
-    format = jsonencode({
-      requestId      = "$context.requestId"
-      ip             = "$context.identity.sourceIp"
-      requestTime    = "$context.requestTime"
-      httpMethod     = "$context.httpMethod"
-      resourcePath   = "$context.resourcePath"
-      status         = "$context.status"
-      protocol       = "$context.protocol"
-      responseLength = "$context.responseLength"
-    })
-  }
+  # Access logging (commented out - requires CloudWatch Logs role to be configured)
+  # To enable: Configure API Gateway CloudWatch Logs role in AWS Console first
+  # access_log_settings {
+  #   destination_arn = aws_cloudwatch_log_group.api_gateway.arn
+  #   format = jsonencode({
+  #     requestId      = "$context.requestId"
+  #     ip             = "$context.identity.sourceIp"
+  #     requestTime    = "$context.requestTime"
+  #     httpMethod     = "$context.httpMethod"
+  #     resourcePath   = "$context.resourcePath"
+  #     status         = "$context.status"
+  #     protocol       = "$context.protocol"
+  #     responseLength = "$context.responseLength"
+  #   })
+  # }
 
   tags = {
     Name        = "${var.project_name}-api-stage-${var.environment}"
@@ -274,7 +269,7 @@ resource "aws_cloudwatch_log_group" "api_gateway" {
 
 # WAF Association (if WAF is enabled)
 resource "aws_wafv2_web_acl_association" "api" {
-  count = var.waf_web_acl_id != null ? 1 : 0
+  count = var.enable_waf ? 1 : 0
 
   resource_arn = aws_api_gateway_stage.api.arn
   web_acl_arn  = var.waf_web_acl_arn

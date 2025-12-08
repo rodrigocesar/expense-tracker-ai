@@ -27,10 +27,9 @@ resource "aws_dynamodb_table" "expenses" {
     projection_type = "ALL"
   }
 
-  # Server-side encryption
+  # Server-side encryption (uses AWS managed key by default)
   server_side_encryption {
-    enabled     = true
-    kms_key_id  = null # Uses AWS managed key
+    enabled = true
   }
 
   # Point-in-time recovery

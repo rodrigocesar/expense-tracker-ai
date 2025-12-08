@@ -16,9 +16,8 @@ module "security" {
   project_name = var.project_name
   environment  = var.environment
 
-  enable_waf      = var.enable_waf
-  waf_rate_limit  = var.waf_rate_limit
-  api_gateway_arn = module.api.api_gateway_arn
+  enable_waf     = var.enable_waf
+  waf_rate_limit = var.waf_rate_limit
 }
 
 # API Module (API Gateway + Lambda)
@@ -39,6 +38,7 @@ module "api" {
   api_gateway_throttle_burst_limit = var.api_gateway_throttle_burst_limit
   api_gateway_throttle_rate_limit  = var.api_gateway_throttle_rate_limit
 
+  enable_waf     = var.enable_waf
   waf_web_acl_id  = try(module.security.waf_web_acl_id, null)
   waf_web_acl_arn = try(module.security.waf_web_acl_arn, null)
 
@@ -60,7 +60,9 @@ module "frontend" {
 
   cloudfront_price_class = var.cloudfront_price_class
 
-  waf_web_acl_id = try(module.security.waf_web_acl_id, null)
+  # WAF for CloudFront requires CLOUDFRONT scope (different from REGIONAL WAF for API Gateway)
+  # For now, CloudFront WAF is disabled. To enable, create a separate CLOUDFRONT-scoped WAF.
+  waf_web_acl_id = null
 
   depends_on = [
     module.security,
