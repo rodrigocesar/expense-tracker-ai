@@ -4,6 +4,35 @@ data "aws_region" "current" {}
 # Data source for current AWS caller identity
 data "aws_caller_identity" "current" {}
 
+# API Gateway Usage Plan for Throttling
+# Usage plans allow configuring throttling and quota limits for the API
+# This provides better control than account-level throttling
+# Note: Throttling applies to all requests to the associated stage, even without API keys
+resource "aws_api_gateway_usage_plan" "api" {
+  name        = "${var.project_name}-usage-plan-${var.environment}"
+  description = "Usage plan for ${var.project_name} API throttling"
+
+  api_stages {
+    api_id = aws_api_gateway_rest_api.api.id
+    stage  = aws_api_gateway_stage.api.stage_name
+  }
+
+  throttle_settings {
+    burst_limit = var.api_gateway_throttle_burst_limit
+    rate_limit  = var.api_gateway_throttle_rate_limit
+  }
+
+  tags = {
+    Name        = "${var.project_name}-usage-plan-${var.environment}"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+
+  depends_on = [
+    aws_api_gateway_stage.api
+  ]
+}
+
 # Build Lambda functions (install dependencies and compile)
 resource "null_resource" "lambda_build" {
   triggers = {
