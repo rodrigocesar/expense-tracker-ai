@@ -1,13 +1,13 @@
 # AWS Configuration
-aws_region  = "us-east-1"
+aws_region  = "eu-west-1"
 environment = "dev"
 
 # Project Configuration
 project_name = "expense-tracker"
 
 # Domain Configuration (optional)
-# domain_name     = "expenses.example.com"
-# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/abc123..."
+# domain_name     = "expenses.vela.com"
+# certificate_arn = "arn:aws:acm:eu-west-1:123456789012:certificate/abc123..."
 
 # WAF Configuration
 enable_waf     = true
