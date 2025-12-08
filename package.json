@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "build:static": "NEXT_EXPORT=true next build",
+    "start": "next start -p ${PORT:-3000}",
     "lint": "next lint"
   },
   "keywords": [

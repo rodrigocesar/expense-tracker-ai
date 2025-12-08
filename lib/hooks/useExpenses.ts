@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { Expense } from '@/lib/types/expense';
 import { 
   loadExpenses, 
-  saveExpenses, 
   addExpense as addExpenseToStorage,
   updateExpense as updateExpenseInStorage,
   deleteExpense as deleteExpenseFromStorage,
@@ -15,11 +14,12 @@ export const useExpenses = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchExpenses = useCallback(async () => {
     try {
-      const loaded = loadExpenses();
-      setExpenses(loaded);
+      setLoading(true);
       setError(null);
+      const loaded = await loadExpenses();
+      setExpenses(loaded);
     } catch (err) {
       setError('Failed to load expenses');
       console.error(err);
@@ -28,11 +28,15 @@ export const useExpenses = () => {
     }
   }, []);
 
-  const addExpense = useCallback((expense: Expense) => {
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
+
+  const addExpense = useCallback(async (expense: Expense): Promise<boolean> => {
     try {
-      const updated = addExpenseToStorage(expense);
-      setExpenses(updated);
       setError(null);
+      const created = await addExpenseToStorage(expense);
+      setExpenses((prev) => [...prev, created]);
       return true;
     } catch (err) {
       setError('Failed to add expense');
@@ -41,11 +45,11 @@ export const useExpenses = () => {
     }
   }, []);
 
-  const updateExpense = useCallback((id: string, expense: Expense) => {
+  const updateExpense = useCallback(async (id: string, expense: Expense): Promise<boolean> => {
     try {
-      const updated = updateExpenseInStorage(id, expense);
-      setExpenses(updated);
       setError(null);
+      const updated = await updateExpenseInStorage(id, expense);
+      setExpenses((prev) => prev.map((e) => (e.id === id ? updated : e)));
       return true;
     } catch (err) {
       setError('Failed to update expense');
@@ -54,11 +58,11 @@ export const useExpenses = () => {
     }
   }, []);
 
-  const deleteExpense = useCallback((id: string) => {
+  const deleteExpense = useCallback(async (id: string): Promise<boolean> => {
     try {
-      const updated = deleteExpenseFromStorage(id);
-      setExpenses(updated);
       setError(null);
+      await deleteExpenseFromStorage(id);
+      setExpenses((prev) => prev.filter((e) => e.id !== id));
       return true;
     } catch (err) {
       setError('Failed to delete expense');
@@ -74,16 +78,7 @@ export const useExpenses = () => {
     addExpense,
     updateExpense,
     deleteExpense,
-    refetch: () => {
-      try {
-        const loaded = loadExpenses();
-        setExpenses(loaded);
-        setError(null);
-      } catch (err) {
-        setError('Failed to reload expenses');
-        console.error(err);
-      }
-    },
+    refetch: fetchExpenses,
   };
 };
 

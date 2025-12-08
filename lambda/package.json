@@ -1,0 +1,28 @@
+{
+  "name": "expense-tracker-lambda",
+  "version": "1.0.0",
+  "description": "Lambda functions for Expense Tracker API",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run bundle",
+    "bundle": "node scripts/bundle.js",
+    "clean": "rm -rf dist .terraform",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.490.0",
+    "@aws-sdk/lib-dynamodb": "^3.490.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.132",
+    "@types/node": "^20.10.6",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.3.3",
+    "esbuild": "^0.19.11"
+  }
+}
+

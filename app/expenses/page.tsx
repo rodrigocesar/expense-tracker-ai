@@ -28,16 +28,16 @@ export default function ExpensesPage() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    deleteExpense(id);
+  const handleDelete = async (id: string) => {
+    await deleteExpense(id);
   };
 
-  const handleSubmit = (expense: Expense) => {
+  const handleSubmit = async (expense: Expense) => {
     if (editingExpense) {
-      updateExpense(expense.id, expense);
+      await updateExpense(expense.id, expense);
       setEditingExpense(undefined);
     } else {
-      addExpense(expense);
+      await addExpense(expense);
     }
     setShowForm(false);
   };

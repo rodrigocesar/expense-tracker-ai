@@ -14,12 +14,19 @@ export default function AddExpensePage() {
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (expense: Expense) => {
-    setSubmitting(true);
-    const success = addExpense(expense);
-    setSubmitting(false);
-    
-    if (success) {
-      router.push('/expenses');
+    try {
+      setSubmitting(true);
+      console.log('Submitting expense:', expense);
+      const success = await addExpense(expense);
+      console.log('Add expense result:', success);
+      setSubmitting(false);
+      
+      if (success) {
+        router.push('/expenses');
+      }
+    } catch (err) {
+      console.error('Error submitting expense:', err);
+      setSubmitting(false);
     }
   };
 
