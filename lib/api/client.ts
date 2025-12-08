@@ -16,15 +16,30 @@ class ApiClient {
   }
 
   private buildUrl(path: string, params?: Record<string, string>): string {
-    const url = new URL(path, this.baseUrl);
+    // Handle base URL that may include a path (like /dev)
+    // If baseUrl ends with a path, we need to append to it, not replace it
+    const baseUrlObj = new URL(this.baseUrl);
+    const basePath = baseUrlObj.pathname;
+    
+    // Ensure path starts with /
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    
+    // Combine base path with new path
+    const fullPath = basePath.endsWith('/') 
+      ? `${basePath}${cleanPath.slice(1)}` 
+      : `${basePath}${cleanPath}`;
+    
+    baseUrlObj.pathname = fullPath;
+    
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          url.searchParams.append(key, value);
+          baseUrlObj.searchParams.append(key, value);
         }
       });
     }
-    return url.toString();
+    
+    return baseUrlObj.toString();
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
